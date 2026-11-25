@@ -1,0 +1,4 @@
+# Danh sach tai khoan POP3: username=password=mailboxDir
+bao456=happy=mailboxes/bao456
+user1=123456=mailboxes/user1
+empty=123456=mailboxes/empty

@@ -1,0 +1,13 @@
+From: giangvien@huce.edu.vn
+To: bao456@huce.edu.vn
+Date: Tue, 24 Nov 2026 14:15:00 +0700
+Subject: Thong bao de tai do an POP3 v5
+
+Chao cac em,
+De tai 15 yeu cau xay dung chuong trinh Client-Server theo giao thuc POP3:
+- Xem thong ke so luong va dung luong hop thu (STAT).
+- Sao luu toan bo email vao mot file van ban duy nhat (RETR) ma khong xoa thu tren server.
+..Luu y: dong bat dau bang dau cham can xu ly dung dot-stuffing theo RFC 1939.
+.Day la dong thu nghiem bat dau bang 1 dau cham.
+
+Chuc cac em hoan thanh tot do an!

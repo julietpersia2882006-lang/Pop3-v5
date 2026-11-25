@@ -1,0 +1,9 @@
+From: team@local.test
+To: user1@local.test
+Date: Wed, 25 Nov 2026 11:20:00 +0700
+Subject: Bao cao tien do du an
+
+Noi dung bao cao:
+1. Hoan thanh POP3 Server da luong.
+2. Hoan thanh POP3 Client voi lenh login, stat, backup, quit.
+3. Kiem thu thanh cong!

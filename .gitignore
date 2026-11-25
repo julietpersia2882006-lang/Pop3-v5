@@ -1,0 +1,18 @@
+# Build outputs
+bin/
+obj/
+*.exe
+*.o
+*.out
+*.depend
+*.layout
+
+# Local backup test outputs
+backup*.txt
+test_backup*.txt
+empty_backup*.txt
+
+# OS / IDE files
+.DS_Store
+Thumbs.db
+.vscode/
