@@ -1,0 +1,257 @@
+classDiagram
+    direction TB
+
+    %% ===== POP3 SERVER (15 lop) =====
+    namespace Pop3Server_App {
+        class Socket {
+            #int sockDesc
+            #bool keepAlive
+            +close() void
+            +getLocalAddress() string
+            +getLocalPort() unsigned short
+            +setLocalPort(localPort) void
+            +resolveService(service, protocol)$ unsigned short
+            +startUp()$ void
+            +cleanUp()$ void
+        }
+        class TcpSocket {
+            +connect(remoteAddress, remotePort) void
+            +send(buffer, bufferLen) int
+            +recv(buffer, bufferLen) int
+            +recvLine(buffer, bufLen) int
+            +setTimeOut(timeout) bool
+            +shutdown(type) void
+            +close() void
+            +isAlive() bool
+            +getRemoteAddress() string
+            +getRemotePort() unsigned short
+        }
+        class TcpServerSocket {
+            +setListen(port, queueLength) void
+            +accept(timeout) TcpSocket
+            +isListening() bool
+            +close() void
+            -listen(queueLength) void
+        }
+        class SocketException {
+            <<exception>>
+            -string userMessage
+            +SocketException(message, inclSysMsg)
+            +what() const char*
+        }
+        class CmdLineInterface {
+            -string cmdPrompt
+            -CLI_CMD_FUNC cmdDoFunc[64]
+            -string cmdNameList[64]
+            -unsigned short numCommands
+            -bool bRunning
+            +addCmd(name, f) void
+            +run() void
+            #initCmd() void
+            #doQuit() void
+            -readCmd(cmd) void
+            -parseCmd(cmd, cmd_argv, cmd_argc) unsigned short
+            -doCmd(id, cmd_argv, cmd_argc) void
+        }
+        class Pop3ServerCLI {
+            -Pop3Server* pop3Server
+            +Pop3ServerCLI()
+            #initCmd() void
+            #doQuit() void
+            -doStart(cmd_argv, cmd_argc) void
+            -doStop(cmd_argv, cmd_argc) void
+            -doStatus(cmd_argv, cmd_argc) void
+            -doHelp(cmd_argv, cmd_argc) void
+        }
+        class TCPServer {
+            <<abstract>>
+            #ServerConfig* conf
+            #TcpServerSocket master
+            #bool running
+            #unsigned short port
+            #unsigned short numCmd
+            #string cmdNameList[64]
+            #CMD_FUNC cmdDoFunc[64]
+            +start() bool
+            +stop() void
+            +restart() bool
+            +isRunning() bool
+            +configServer() bool
+            #run() void
+            #startNewSession(slave)* void
+            #addCmd(cmdName, f) void
+            #doCmd(session, cmdId, cmdArgv, cmdArgc) void
+        }
+        class Pop3Server {
+            -Pop3ServerConfig* pop3Conf
+            -mutex logMtx
+            +Pop3Server(localPort)
+            +configServer() bool
+            +setPort(newPort) void
+            +getPort() unsigned short
+            +getAccountCount() size_t
+            #initCmd() void
+            #startNewSession(slave) void
+            -readCmd(slave, cmdLine) int
+            -parseCmd(cmdLine, cmdArgv, cmdArgc) uint8_t
+            -logMessage(msg) void
+        }
+        class Session {
+            <<abstract>>
+            #ServerConfig* conf
+            #TcpSocket slave
+            #bool quitSession
+            +Session(slave, conf)
+            +doUnknown(cmd_argv, cmd_argc)* void
+            +reset() void
+            +isQuit() bool
+        }
+        class Pop3Session {
+            -Pop3ServerConfig* pop3Conf
+            -Pop3State state
+            -string pendingUser
+            -string loggedUser
+            -bool mailboxLocked
+            -vector~MailEntry~ mails
+            +sendGreeting() bool
+            +doUser(argv, argc) void
+            +doPass(argv, argc) void
+            +doStat(argv, argc) void
+            +doList(argv, argc) void
+            +doRetr(argv, argc) void
+            +doDele(argv, argc) void
+            +doRset(argv, argc) void
+            +doNoop(argv, argc) void
+            +doTop(argv, argc) void
+            +doUidl(argv, argc) void
+            +doQuit(argv, argc) void
+            +doUnknown(argv, argc) void
+            -sendAll(data) bool
+            -calcOctetSize(filePath) size_t
+            -loadMailbox(mailboxDir) bool
+            -getStats(count, totalBytes) void
+        }
+        class Pop3State {
+            <<enumeration>>
+            POP3_AUTH
+            POP3_TRANS
+            POP3_UPDATE
+        }
+        class MailEntry {
+            <<struct>>
+            +int id
+            +string fileName
+            +string filePath
+            +size_t size
+            +bool deleted
+        }
+        class ServerConfig {
+            <<abstract>>
+            #int timeout
+            #unordered_map accMap
+            +addAccount(acc) void
+            +getAccount(username) Account*
+            +isValidUser(username) bool
+            +authenticate(username, password) bool
+            +getTimeout() int
+            +loadAccountsFromFile(filename)* bool
+        }
+        class Pop3ServerConfig {
+            -string baseDir
+            -mutex lockMtx
+            -unordered_set~string~ lockedUsers
+            +loadAccountsFromFile(filename) bool
+            +lockMailbox(username) bool
+            +unlockMailbox(username) void
+            +getAccountCount() size_t
+            +getBaseDir() string
+        }
+        class Account {
+            #string username
+            -string password
+            +getUserName() string
+            +setUserName(username) void
+            +setPassword(pass) void
+            +isValidPassword(pass) bool
+        }
+        class Pop3Account {
+            -string mailboxDir
+            +Pop3Account(user, pass, mailboxDir)
+            +getMailboxDir() string
+            +setMailboxDir(dir) void
+        }
+    }
+
+    %% ===== POP3 CLIENT (7 lop) =====
+    namespace Pop3Client_App {
+        class TcpClient {
+            #TcpSocket localsocket
+            #bool connected
+            +isConnected() bool
+            +open(serverHost, port) bool
+            +close() void
+            #sendStringRequest(request) int
+            #sendDataBuffer(buffer, bufLen) int
+            #recvGetLine(buf, maxLen) int
+            #recvDataBuffer(buffer, bufLen) int
+            #recvStringBuffer(buffer, bufLen) int
+        }
+        class Pop3Client {
+            -bool loggedIn
+            -string currentUser
+            -string currentHost
+            -unsigned short currentPort
+            +isLoggedIn() bool
+            +getCurrentUser() string
+            +login(ip, user, pass, port) bool
+            +stat(mailCount, totalBytes) bool
+            +listMails(mails) bool
+            +retrMail(mailId, content) bool
+            +backup(outputFile) bool
+            +quitSession() bool
+            -sendCommand(cmd) bool
+            -readResponseLine(line) bool
+            -readMultiLine(lines) bool
+            -isOkResponse(resp)$ bool
+        }
+        class Pop3ClientCLI {
+            -Pop3Client client
+            +Pop3ClientCLI()
+            #initCmd() void
+            #doQuit() void
+            -doLogin(cmd_argv, cmd_argc) void
+            -doStat(cmd_argv, cmd_argc) void
+            -doBackup(cmd_argv, cmd_argc) void
+            -doList(cmd_argv, cmd_argc) void
+            -doLogout(cmd_argv, cmd_argc) void
+            -doHelp(cmd_argv, cmd_argc) void
+        }
+    }
+
+    %% Quan he Server
+    Socket <|-- TcpSocket
+    Socket <|-- TcpServerSocket
+    CmdLineInterface <|-- Pop3ServerCLI
+    TCPServer <|-- Pop3Server
+    Session <|-- Pop3Session
+    ServerConfig <|-- Pop3ServerConfig
+    Account <|-- Pop3Account
+
+    Pop3ServerCLI o-- "1" Pop3Server
+    TCPServer *-- "1" TcpServerSocket : master
+    Pop3Server *-- "1" Pop3ServerConfig : pop3Conf
+    Pop3Server ..> Pop3Session : creates
+    Pop3Session *-- "1" TcpSocket : slave
+    Pop3Session --> Pop3ServerConfig : uses
+    Pop3Session --> Pop3State : state
+    Pop3Session *-- "0..*" MailEntry : mails
+    ServerConfig o-- "0..*" Account
+    Pop3ServerConfig o-- "0..*" Pop3Account
+    TcpServerSocket ..> TcpSocket : accepts
+    TcpSocket ..> SocketException : throws
+
+    %% Quan he Client
+    CmdLineInterface <|-- Pop3ClientCLI
+    TcpClient <|-- Pop3Client
+    Pop3ClientCLI *-- "1" Pop3Client : client
+    TcpClient *-- "1" TcpSocket : localsocket

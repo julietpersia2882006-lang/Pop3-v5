@@ -52,3 +52,10 @@ Pop3Client> stat
 Pop3Client> backup backup.txt
 Pop3Client> quit
 ```
+
+## Biểu đồ Lớp mức thực thi (Draw.io)
+- **Mở trực tiếp trên Draw.io (3 trang chỉnh sửa được: `Pop3Server`, `Pop3Client`, `Overview Client-Server`)**:
+  - Tải file `docs/Pop3_v5_ClassDiagram.drawio`, vào https://app.diagrams.net/ → **File → Open from → Device...** (hoặc kéo thả file vào trình duyệt).
+- **Import bằng mã Mermaid trong Draw.io**:
+  - Mở `docs/Pop3_v5_ClassDiagram_Mermaid.mmd`, copy nội dung và dán vào **Arrange → Insert → Advanced → Mermaid...**.
+
